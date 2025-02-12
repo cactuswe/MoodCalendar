@@ -158,15 +158,18 @@
     }
     .vertical-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
+      appearance: none;
       width: 20px;
       height: 100px;
       background: #666;
       border: 2px solid #fff;
       border-radius: 25px;
       cursor: pointer;
-      background-clip: padding-box;       /* Förhindrar att borderna "läcker" utanför */
-      outline: none;                       /* Tar bort eventuell outline vid fokus */
-      -webkit-tap-highlight-color: transparent; /* Förhindrar tap-highlight på iOS */
+      background-clip: padding-box;       /* Förhindrar att border "läcker" utanför */
+      outline: none;                       /* Tar bort outline vid fokus */
+      -webkit-transform: translateZ(0);    /* Tvingar GPU-accelererad rendering */
+      transform: translateZ(0);
+      will-change: transform;
     }
     .vertical-slider::-moz-range-track {
       height: 100px;
@@ -181,8 +184,10 @@
       border: 2px solid #fff;
       border-radius: 50%;
       cursor: pointer;
-      background-clip: padding-box;       /* För att klippa bakgrunden inom border */
+      background-clip: padding-box;
       outline: none;
+      transform: translateZ(0);
+      will-change: transform;
     }
     .slider-value {
       font-size: 2rem;
