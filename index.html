@@ -28,7 +28,10 @@
       /* Alternativt, för att säkerställa att touch-interaktioner bara hanteras av dina element: */
       /* touch-action: manipulation; */
     }
-
+    body {
+      background-color: #222; /* Ändra till din önskade färg */
+      padding-top: env(safe-area-inset-top);
+    }
     /* ===== CSS-Variabler för tema (uppdateras dynamiskt) ===== */
     :root {
       --slider-gradient-start: rgb(255,102,102);
