@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Mood Kalender</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+
   <!-- Gör appen installationsbar -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,6 +15,20 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 
   <style>
+    html, body {
+      /* Hindrar scrollning */
+      overflow: hidden;
+      /* Hindrar textmarkering */
+      -webkit-user-select: none;  /* iOS, Safari */
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      /* Hindrar long-press callout (kopiera/klistra in) på iOS */
+      -webkit-touch-callout: none;
+      /* Alternativt, för att säkerställa att touch-interaktioner bara hanteras av dina element: */
+      /* touch-action: manipulation; */
+    }
+
     /* ===== CSS-Variabler för tema (uppdateras dynamiskt) ===== */
     :root {
       --slider-gradient-start: rgb(255,102,102);
