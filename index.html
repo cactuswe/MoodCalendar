@@ -417,6 +417,13 @@
       font-size: 0.9rem;
       z-index: 3000;
     }
+    #todayTab, #calendarTab {
+      background-color: #555;
+      color: #fff;
+    }
+    #todayTab.active, #calendarTab.active {
+      background-color: #222;
+    }
     /* ===== Swipe Animation ===== */
     .slide-in-left { animation: slideInLeft 0.5s forwards; }
     @keyframes slideInLeft { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
