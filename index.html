@@ -164,12 +164,16 @@
       border: 2px solid #fff;
       border-radius: 25px;
       cursor: pointer;
+      background-clip: padding-box;       /* Förhindrar att borderna "läcker" utanför */
+      outline: none;                       /* Tar bort eventuell outline vid fokus */
+      -webkit-tap-highlight-color: transparent; /* Förhindrar tap-highlight på iOS */
     }
     .vertical-slider::-moz-range-track {
       height: 100px;
       background: linear-gradient(to right, var(--slider-gradient-start), var(--slider-gradient-end));
       border-radius: 3px;
     }
+
     .vertical-slider::-moz-range-thumb {
       width: 20px;
       height: 100px;
@@ -177,6 +181,8 @@
       border: 2px solid #fff;
       border-radius: 50%;
       cursor: pointer;
+      background-clip: padding-box;       /* För att klippa bakgrunden inom border */
+      outline: none;
     }
     .slider-value {
       font-size: 2rem;
