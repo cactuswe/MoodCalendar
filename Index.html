@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Mood Kalender</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  
+  <!-- Gör appen installationsbar -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  
+  <!-- Koppla manifest & ikon -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <style>
+    /* ===== CSS-Variabler för tema (uppdateras dynamiskt) ===== */
+    :root {
+      --slider-gradient-start: rgb(255,102,102);
+      --slider-gradient-end: rgb(102,255,102);
+    }
+    
+    /* ===== Global Reset & Grundstilar ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
+    body { background-color: #fafafa; color: #333; transition: background-color 0.3s, color 0.3s; }
+    
+    /* Dark mode – appliceras både automatiskt utifrån enhetens inställning och via toggle */
+    .dark-mode { background-color: #222; color: #eee; }
+    .dark-mode header,
+    .dark-mode .today-card,
+    .dark-mode .calendar-container,
+    .dark-mode .chart-container,
+    .dark-mode .modal-content {
+      background-color: #333; color: #eee;
+    }
+    .dark-mode .weekday { background-color: #444; color: #eee; }
+    .dark-mode .day-cell { background-color: #444; color: #eee; }
+    .dark-mode .day-cell.future { background-color: #333; color: #aaa; }
+    .dark-mode #settingsBtn { color: #eee; }
+    .dark-mode .vertical-slider::-webkit-slider-runnable-track,
+    .dark-mode .vertical-slider::-moz-range-track {
+      background: linear-gradient(to right, #4a4a4a, #666);
+    }
+    .dark-mode .vertical-slider::-webkit-slider-thumb {
+      background: #888; border: 2px solid #333;
+    }
+    .dark-mode .vertical-slider::-moz-range-thumb {
+      background: #888; border: 2px solid #333;
+    }
+    
+    /* ===== Header & Navigation ===== */
+    header {
+      display: flex;
+      flex-direction: column;
+      background-color: #fff;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    header h1 { text-align: center; margin-bottom: 0.5rem; font-size: 1.8rem; }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    nav button {
+      background-color: #eee;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    nav button.active,
+    nav button:hover { background-color: #ddd; }
+    /* Settings-knapp – placeras längst upp till höger */
+    #settingsBtn {
+      align-self: flex-end;
+      background-color: inherit;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 2rem;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      color: #333;
+    }
+    
+    /* ===== Sektioner (med fade-in) ===== */
+    .section {
+      display: none;
+      padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .section.active { display: block; opacity: 1; }
+    
+    /* ===== Dagens Mående Card ===== */
+    .today-card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+      height: 600px;
+      margin: 1rem auto;
+      text-align: center;
+    }
+    .today-card h2 { margin-bottom: 0.5rem; font-size: 1.4rem; }
+    .today-date { font-size: 1.1rem; margin-bottom: 1rem; color: #555; }
+    
+    /* ===== Slider Container & Vertikal Slider ===== */
+    .slider-container {
+      position: relative;
+      height: 250px;
+      margin: 1rem auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .vertical-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 250px;  /* Längden (blir höjd efter rotation) */
+      height: 100px; /* Tjockleken (blir bredd) */
+      transform: rotate(-90deg);
+      margin: 0;
+      position: absolute;
+      bottom: 0;
+    }
+    .vertical-slider:focus { outline: none; }
+    .vertical-slider::-webkit-slider-runnable-track {
+      height: 100px;
+      background: linear-gradient(to right, var(--slider-gradient-start), var(--slider-gradient-end));
+      border-radius: 8px;
+    }
+    .vertical-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 100px;
+      background: #666;
+      border: 2px solid #fff;
+      border-radius: 25px;
+      cursor: pointer;
+    }
+    .vertical-slider::-moz-range-track {
+      height: 100px;
+      background: linear-gradient(to right, var(--slider-gradient-start), var(--slider-gradient-end));
+      border-radius: 3px;
+    }
+    .vertical-slider::-moz-range-thumb {
+      width: 20px;
+      height: 100px;
+      background: #666;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .slider-value {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-top: 1rem;
+      width: 100px;
+      text-align: center;
+      padding: 0.2rem;
+      border-radius: 4px;
+    }
+    
+    /* ===== Knappar ===== */
+    .save-btn {
+      background-color: #666;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
+      margin-top: 6rem;
+    }
+    /* För modaler sänker vi marginalen på save-knappen så att den syns */
+    #popupModal .save-btn { margin-top: 4.5rem !important; }
+    .save-btn:hover { background-color: #555; }
+    
+    /* ===== Kalender ===== */
+    .calendar-container {
+      max-width: 600px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .month-header { font-size: 1.3rem; font-weight: bold; }
+    .month-nav { font-size: 1.5rem; cursor: pointer; user-select: none; }
+    .weekday-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      background-color: #f0f0f0;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    .weekday {
+      text-align: center;
+      font-weight: bold;
+      padding: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+    }
+    .day-cell {
+      aspect-ratio: 1/1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #fff;
+      border-radius: 4px;
+      font-size: 1.3rem;
+      transition: background-color 0.3s, color 0.3s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    .day-cell:hover { background-color: #eee; }
+    .day-cell.future {
+      background-color: #f9f9f9;
+      color: #aaa;
+      cursor: default;
+    }
+    .day-cell.today { border: 2px solid #c82828; font-weight: bold; }
+    .mood-summary {
+      text-align: center;
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    /* ===== Diagram ===== */
+    .chart-container {
+      max-width: 600px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .chart-container canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+    
+    /* ===== Modaler (Popup, Settings & Confirm) ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: #fff;
+      margin: 10% auto;
+      padding: 1rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    /* Allmän styling för knappar i modaler */
+    .modal-content button {
+      background-color: #2196F3;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      margin: 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .modal-content button:hover {
+      background-color: #1976D2;
+      transform: scale(1.02);
+    }
+    /* Specifik styling för bekräftelsemodalens knappar */
+    #confirmYesBtn { background-color: #4CAF50; }
+    #confirmNoBtn { background-color: #f44336; }
+    
+    /* ===== Settings Modal Extra – Toggle Switch, Tema-dropdown & Rensa Data ===== */
+    #settingsModal .modal-content { max-width: 300px; }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin-top: 1rem;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider-toggle {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider-toggle:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider-toggle { background-color: #2196F3; }
+    input:checked + .slider-toggle:before { transform: translateX(26px); }
+    
+    #settingsModal h2 { margin-bottom: 1rem; }
+    #darkModeStatus { display: block; margin-top: 0.5rem; font-size: 0.9rem; }
+    #resetDataBtn {
+      margin-top: 1rem;
+      background-color: #b00;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+    #resetDataBtn:hover { background-color: #900; }
+    
+    /* Tema-dropdown i settings */
+    #themeSelect {
+      width: 100%;
+      padding: 0.4rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    
+    /* ===== Toast Meddelande ===== */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s;
+      font-size: 0.9rem;
+      z-index: 3000;
+    }
+    /* ===== Swipe Animation ===== */
+    .slide-in-left { animation: slideInLeft 0.5s forwards; }
+    @keyframes slideInLeft { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .slide-in-right { animation: slideInRight 0.5s forwards; }
+    @keyframes slideInRight { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    /* ===== Responsivt – Mobilanpassat ===== */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.6rem; }
+      nav button { font-size: 0.9rem; padding: 0.4rem 0.8rem; }
+      .today-card, .calendar-container, .chart-container { width: 95%; margin: 0.5rem auto; }
+      .modal-content { width: 90%; padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Header med Navigation & Settings ===== -->
+  <header>
+    <h1>Mood Kalender</h1>
+    <nav>
+      <button id="todayTab" class="active">Dagens Mående</button>
+      <button id="calendarTab">Kalender</button>
+    </nav>
+    <button id="settingsBtn">⚙</button>
+  </header>
+
+  <!-- ===== Dagens Mående (vertikal slider) ===== -->
+  <section id="todaySection" class="section active">
+    <div class="today-card">
+      <h2>Dagens Mående</h2>
+      <div class="today-date" id="todayDate"></div>
+      <p>Dra den vertikala slidern för att registrera ditt Mående.</p>
+      <div class="slider-container">
+        <input type="range" min="0" max="100" value="50" id="todaySlider" class="vertical-slider">
+        <div class="slider-value" id="todaySliderValue">50</div>
+      </div>
+      <button class="save-btn" id="saveTodayBtn">Spara Dagens Mående</button>
+    </div>
+  </section>
+
+  <!-- ===== Kalender ===== -->
+  <section id="calendarSection" class="section">
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <span id="prevMonthBtn" class="month-nav">◀</span>
+        <div class="month-header" id="monthHeader">Kalender</div>
+        <span id="nextMonthBtn" class="month-nav">▶</span>
+      </div>
+      <div class="weekday-row">
+        <div class="weekday">Mån</div>
+        <div class="weekday">Tis</div>
+        <div class="weekday">Ons</div>
+        <div class="weekday">Tor</div>
+        <div class="weekday">Fre</div>
+        <div class="weekday">Lör</div>
+        <div class="weekday">Sön</div>
+      </div>
+      <div class="days-grid" id="daysGrid">
+        <!-- Dynamiskt genererade dagceller -->
+      </div>
+      <div class="mood-summary" id="moodSummary">Ingen data ännu.</div>
+    </div>
+    <div class="chart-container">
+      <canvas id="moodChart" width="600" height="200"></canvas>
+    </div>
+  </section>
+
+  <!-- ===== Popup Modal för kalenderredigering ===== -->
+  <div id="popupModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" id="modalClose">&times;</span>
+      <h2>Ändra Mående</h2>
+      <div class="slider-container">
+        <input type="range" min="0" max="100" value="50" id="popupSlider" class="vertical-slider">
+        <div class="slider-value" id="popupSliderValue">50</div>
+      </div>
+      <button class="save-btn" id="popupSaveBtn">Spara</button>
+    </div>
+  </div>
+
+  <!-- ===== Settings Modal (med dark mode, temaväxling & rensa data) ===== -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" id="settingsModalClose">&times;</span>
+      <h2>Inställningar</h2>
+      <div class="dark-switch">
+        <label class="switch">
+          <input type="checkbox" id="darkModeToggle">
+          <span class="slider-toggle"></span>
+        </label>
+        <span id="darkModeStatus">Dark Mode Off</span>
+      </div>
+      <div>
+        <label for="themeSelect">Välj Tema:</label>
+        <select id="themeSelect">
+          <option value="standard">Standard</option>
+          <option value="ocean">Ocean Blue</option>
+          <option value="sunset">Sunset</option>
+          <option value="forest">Forest</option>
+          <option value="lavender">Lavender</option>
+          <option value="rose">Rose</option>
+          <option value="midnight">Midnight</option>
+        </select>
+      </div>
+      <button id="resetDataBtn">Rensa Data</button>
+    </div>
+  </div>
+
+  <!-- ===== Custom Confirmation Modal ===== -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" id="confirmModalClose">&times;</span>
+      <h2>Är du säker?</h2>
+      <p id="confirmModalMessage"></p>
+      <button id="confirmYesBtn">Ja</button>
+      <button id="confirmNoBtn">Nej</button>
+    </div>
+  </div>
+
+  <!-- ===== Toast Meddelande ===== -->
+  <div id="toast"></div>
+
+  <script>
+    /* ===== Global Variables & Navigation ===== */
+    const todayTab = document.getElementById('todayTab');
+    const calendarTab = document.getElementById('calendarTab');
+    const todaySection = document.getElementById('todaySection');
+    const calendarSection = document.getElementById('calendarSection');
+
+    // Dagens Mående
+    const todayDateElem = document.getElementById('todayDate');
+    const todaySlider = document.getElementById('todaySlider');
+    const todaySliderValueElem = document.getElementById('todaySliderValue');
+    const saveTodayBtn = document.getElementById('saveTodayBtn');
+
+    // Kalender
+    const daysGrid = document.getElementById('daysGrid');
+    const monthHeader = document.getElementById('monthHeader');
+    const moodSummary = document.getElementById('moodSummary');
+    const moodChartCanvas = document.getElementById('moodChart');
+    const ctx = moodChartCanvas.getContext('2d');
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
+    
+    // Popup Modal för kalenderredigering
+    const popupModal = document.getElementById('popupModal');
+    const modalClose = document.getElementById('modalClose');
+    const popupSlider = document.getElementById('popupSlider');
+    const popupSliderValueElem = document.getElementById('popupSliderValue');
+    const popupSaveBtn = document.getElementById('popupSaveBtn');
+
+    // Settings Modal
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsModalClose = document.getElementById('settingsModalClose');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const darkModeStatus = document.getElementById('darkModeStatus');
+    const resetDataBtn = document.getElementById('resetDataBtn');
+    const themeSelect = document.getElementById('themeSelect');
+
+    // Confirmation Modal
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmModalClose = document.getElementById('confirmModalClose');
+    const confirmYesBtn = document.getElementById('confirmYesBtn');
+    const confirmNoBtn = document.getElementById('confirmNoBtn');
+    const confirmModalMessage = document.getElementById('confirmModalMessage');
+    let confirmCallback = null;
+
+    // Toast
+    const toast = document.getElementById('toast');
+
+    // Hämta sparade värden från localStorage
+    let dayValues = JSON.parse(localStorage.getItem("dayValues") || "{}");
+
+    // Datum
+    const today = new Date();
+    const todayY = today.getFullYear();
+    const todayM = today.getMonth();
+    const todayD = today.getDate();
+    const currentDate = new Date(todayY, todayM, todayD);
+
+    // Variabel för aktuell dag vid redigering
+    let activeDay = null;
+
+    // Variabler för kalendern
+    let currentCalendarYear = todayY;
+    let currentCalendarMonth = todayM;
+
+    /* --- Teman med tydlig negativ (ledsen) & positiv (glad) färg --- */
+    const themes = {
+      standard: { name: "Standard", negative: [255,102,102], positive: [102,255,102] },
+      ocean:    { name: "Ocean Blue", negative: [0,102,153], positive: [102,204,255] },
+      sunset:   { name: "Sunset", negative: [204,51,0], positive: [255,204,51] },
+      forest:   { name: "Forest", negative: [102,51,0], positive: [102,204,102] },
+      lavender: { name: "Lavender", negative: [153,102,204], positive: [204,153,255] },
+      rose:     { name: "Rose", negative: [153,0,51], positive: [255,102,178] },
+      midnight: { name: "Midnight", negative: [10,10,50], positive: [100,149,237] }
+    };
+
+    // Hämta valt tema från localStorage (om finns) annars standard
+    let currentThemeKey = localStorage.getItem("themeKey") || "standard";
+    // Sätt CSS-variabler utifrån valt tema
+    const theme = themes[currentThemeKey];
+    document.documentElement.style.setProperty('--slider-gradient-start', `rgb(${theme.negative.join(',')})`);
+    document.documentElement.style.setProperty('--slider-gradient-end', `rgb(${theme.positive.join(',')})`);
+
+    /* --- Vid sidladdning, om ett tema nyligen byttes, visa toast --- */
+    if(localStorage.getItem("themeChanged")){
+      showToast("Nytt tema applicerat!");
+      localStorage.removeItem("themeChanged");
+    }
+
+    /* --- Automatisk dark mode: kolla enhetens preferens --- */
+    function applySystemDarkMode() {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.checked = true;
+        darkModeStatus.textContent = "Dark Mode On";
+      } else {
+        document.body.classList.remove('dark-mode');
+        darkModeToggle.checked = false;
+        darkModeStatus.textContent = "Dark Mode Off";
+      }
+      drawLineChart(currentCalendarYear, currentCalendarMonth);
+    }
+    applySystemDarkMode();
+
+    // Lyssna på ändringar i systemets dark mode (om möjligt)
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        applySystemDarkMode();
+      });
+    }
+    prevMonthBtn.addEventListener('click', () => {
+      currentCalendarMonth--;
+      if (currentCalendarMonth < 0) {
+        currentCalendarMonth = 11;
+        currentCalendarYear--;
+      }
+      loadCalendar(currentCalendarYear, currentCalendarMonth);
+    });
+    
+    nextMonthBtn.addEventListener('click', () => {
+      let newMonth = currentCalendarMonth + 1;
+      let newYear = currentCalendarYear;
+      if (newMonth > 11) {
+        newMonth = 0;
+        newYear++;
+      }
+      // Om nästa månad ligger i framtiden, visa istället aktuell månad
+      if (newYear > currentDate.getFullYear() || (newYear === currentDate.getFullYear() && newMonth > currentDate.getMonth())) {
+        newYear = currentDate.getFullYear();
+        newMonth = currentDate.getMonth();
+      }
+      currentCalendarYear = newYear;
+      currentCalendarMonth = newMonth;
+      loadCalendar(newYear, newMonth);
+    });    
+
+    /* --- Navigering mellan flikar --- */
+    todayTab.addEventListener('click', () => {
+      todayTab.classList.add('active');
+      calendarTab.classList.remove('active');
+      todaySection.classList.add('active');
+      calendarSection.classList.remove('active');
+    });
+    calendarTab.addEventListener('click', () => {
+      calendarTab.classList.add('active');
+      todayTab.classList.remove('active');
+      calendarSection.classList.add('active');
+      todaySection.classList.remove('active');
+      loadCalendar(currentCalendarYear, currentCalendarMonth);
+    });
+
+    /* --- Spara Dagens Mående --- */
+    saveTodayBtn.addEventListener('click', () => {
+      const val = parseInt(todaySlider.value, 10);
+      const key = `${todayY}-${todayM}-${todayD}`;
+      dayValues[key] = val;
+      localStorage.setItem("dayValues", JSON.stringify(dayValues));
+      showToast("Dagens Mående sparat!");
+      currentCalendarYear = todayY;
+      currentCalendarMonth = todayM;
+      calendarTab.click();
+    });
+
+    /* --- Settings Modal --- */
+    settingsBtn.addEventListener('click', () => { settingsModal.style.display = "block"; });
+    settingsModalClose.addEventListener('click', () => { settingsModal.style.display = "none"; });
+    window.addEventListener('click', (e) => { if (e.target === settingsModal) { settingsModal.style.display = "none"; } });
+
+    /* --- Custom Confirmation Modal --- */
+    function showConfirm(message, callback) {
+      confirmModalMessage.textContent = message;
+      confirmCallback = callback;
+      confirmModal.style.display = "block";
+    }
+    confirmModalClose.addEventListener('click', () => { confirmModal.style.display = "none"; });
+    confirmNoBtn.addEventListener('click', () => { confirmModal.style.display = "none"; });
+    confirmYesBtn.addEventListener('click', () => {
+      confirmModal.style.display = "none";
+      if (confirmCallback) { confirmCallback(); }
+    });
+    window.addEventListener('click', (e) => { if (e.target === confirmModal) { confirmModal.style.display = "none"; } });
+
+    /* --- Reset Data med custom bekräftelse --- */
+    resetDataBtn.addEventListener('click', () => {
+      showConfirm("Är du säker på att du vill rensa all data?", () => {
+        localStorage.removeItem("dayValues");
+        dayValues = {};
+        loadCalendar(currentCalendarYear, currentCalendarMonth);
+        showToast("Data rensad!");
+      });
+    });
+
+    /* --- Initiera dagens datum --- */
+    function formatDate(date) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString('sv-SE', options);
+    }
+    todayDateElem.textContent = formatDate(today);
+
+    /* --- Uppdatera slider-värde live --- */
+    todaySlider.addEventListener('input', () => {
+      todaySliderValueElem.textContent = todaySlider.value;
+      const color = getMoodColor(todaySlider.value);
+      todaySliderValueElem.style.backgroundColor = color;
+      todaySliderValueElem.style.color = isDarkColor(color) ? "#fff" : "#000";
+    });
+
+    /* --- Tema-val: spara nytt tema och reloada sidan med toast --- */
+    themeSelect.value = currentThemeKey;
+    themeSelect.addEventListener('change', () => {
+      const newTheme = themeSelect.value;
+      localStorage.setItem("themeKey", newTheme);
+      localStorage.setItem("themeChanged", "true");
+      location.reload();
+    });
+
+    /* --- Uppdatera sliderbakgrunder (QOL) --- */
+    function updateSliderBackgrounds() {
+      const todayColor = getMoodColor(todaySlider.value);
+      todaySliderValueElem.style.backgroundColor = todayColor;
+      todaySliderValueElem.style.color = isDarkColor(todayColor) ? "#fff" : "#000";
+      const popupColor = getMoodColor(popupSlider.value);
+      popupSliderValueElem.style.backgroundColor = popupColor;
+      popupSliderValueElem.style.color = isDarkColor(popupColor) ? "#fff" : "#000";
+    }
+
+    /* ===== Kalenderlogik ===== */
+    function loadCalendar(year, month) {
+      currentCalendarYear = year;
+      currentCalendarMonth = month;
+      daysGrid.innerHTML = "";
+      const monthNames = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
+      monthHeader.textContent = `${monthNames[month]} ${year}`;
+
+      const firstDay = new Date(year, month, 1);
+      const lastDayNum = new Date(year, month + 1, 0).getDate();
+      let startWeekday = firstDay.getDay();
+      startWeekday = startWeekday === 0 ? 6 : startWeekday - 1;
+
+      for (let i = 0; i < startWeekday; i++) {
+        const blank = document.createElement('div');
+        blank.className = "day-cell";
+        blank.style.visibility = "hidden";
+        daysGrid.appendChild(blank);
+      }
+
+      for (let day = 1; day <= lastDayNum; day++) {
+        const cell = document.createElement('div');
+        cell.className = "day-cell";
+        cell.textContent = day;
+        const cellDate = new Date(year, month, day);
+        if (year === todayY && month === todayM && day === todayD) { cell.classList.add('today'); }
+        if (cellDate > currentDate) { cell.classList.add('future'); }
+        else {
+          cell.addEventListener('click', () => {
+            activeDay = { year, month, day, cell };
+            const key = `${year}-${month}-${day}`;
+            let currentVal = dayValues[key] !== undefined ? dayValues[key] : 50;
+            popupSlider.value = currentVal;
+            popupSliderValueElem.textContent = currentVal;
+            const color = getMoodColor(currentVal);
+            popupSliderValueElem.style.backgroundColor = color;
+            popupSliderValueElem.style.color = isDarkColor(color) ? "#fff" : "#000";
+            popupModal.style.display = "block";
+          });
+        }
+        const key = `${year}-${month}-${day}`;
+        if (dayValues[key] !== undefined) {
+          const val = dayValues[key];
+          const color = getMoodColor(val);
+          cell.style.backgroundColor = color;
+          cell.style.color = isDarkColor(color) ? "#fff" : "#000";
+        }
+        daysGrid.appendChild(cell);
+      }
+      drawLineChart(year, month);
+      updateMoodSummary(year, month);
+    }
+
+    function updateMoodSummary(year, month) {
+      const lastDayNum = new Date(year, month + 1, 0).getDate();
+      let sum = 0, count = 0;
+      for (let day = 1; day <= lastDayNum; day++) {
+        const key = `${year}-${month}-${day}`;
+        if (dayValues[key] !== undefined) { sum += dayValues[key]; count++; }
+      }
+      if (count > 0) {
+        const avg = Math.round(sum / count);
+        moodSummary.textContent = `Snitt för månaden: ${avg}/100`;
+        const avgColor = getMoodColor(avg);
+        moodSummary.style.backgroundColor = avgColor;
+        moodSummary.style.color = isDarkColor(avgColor) ? "#fff" : "#000";
+      } else {
+        moodSummary.textContent = "Ingen data för denna månad.";
+        moodSummary.style.backgroundColor = "transparent";
+        moodSummary.style.color = "#555";
+      }
+    }
+
+    function drawLineChart(year, month) {
+      ctx.clearRect(0, 0, moodChartCanvas.width, moodChartCanvas.height);
+      const lastDayNum = new Date(year, month + 1, 0).getDate();
+      const dataPoints = [];
+      for (let d = 1; d <= lastDayNum; d++) {
+        const key = `${year}-${month}-${d}`;
+        dataPoints.push(dayValues[key] !== undefined ? dayValues[key] : null);
+      }
+      const w = moodChartCanvas.width;
+      const h = moodChartCanvas.height;
+      const pad = 40;
+      const stepX = (w - pad * 2) / (lastDayNum - 1 || 1);
+      let axisColor = document.body.classList.contains('dark-mode') ? "#777" : "#ccc";
+      let lineColor = document.body.classList.contains('dark-mode') ? "#fff" : "#333";
+      
+      // Rita axlar
+      ctx.beginPath();
+      ctx.strokeStyle = axisColor;
+      ctx.moveTo(pad, h - pad);
+      ctx.lineTo(w - pad, h - pad);
+      ctx.moveTo(pad, h - pad);
+      ctx.lineTo(pad, pad);
+      ctx.stroke();
+      
+      // Rita mjuk linje med quadraticCurveTo
+      ctx.beginPath();
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      
+      let points = [];
+      for (let i = 0; i < dataPoints.length; i++) {
+        let val = dataPoints[i];
+        if (val !== null) {
+          const x = pad + i * stepX;
+          const t = val / 100;
+          const y = pad + (1 - t) * (h - pad * 2);
+          points.push({x, y});
+        } else {
+          if (points.length > 0) {
+            drawSmoothLine(points);
+            points = [];
+          }
+        }
+      }
+      if (points.length > 0) {
+        drawSmoothLine(points);
+      }
+      ctx.stroke();
+      
+      // Rita datapunkter
+      for (let i = 0; i < dataPoints.length; i++) {
+        let val = dataPoints[i];
+        if (val === null) continue;
+        const x = pad + i * stepX;
+        const t = val / 100;
+        const y = pad + (1 - t) * (h - pad * 2);
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+        ctx.fillStyle = getMoodColor(val);
+        ctx.fill();
+        ctx.strokeStyle = lineColor;
+        ctx.stroke();
+      }
+    }
+
+    // Hjälpfunktion för att rita en mjuk kurva
+    function drawSmoothLine(points) {
+      ctx.moveTo(points[0].x, points[0].y);
+      if (points.length === 1) {
+        ctx.lineTo(points[0].x, points[0].y);
+      } else {
+        for (let i = 0; i < points.length - 1; i++) {
+          let midX = (points[i].x + points[i+1].x) / 2;
+          let midY = (points[i].y + points[i+1].y) / 2;
+          ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
+        }
+        let lastPoint = points[points.length - 1];
+        ctx.lineTo(lastPoint.x, lastPoint.y);
+      }
+    }
+
+    /* --- Popup Modal för kalenderredigering --- */
+    modalClose.addEventListener('click', () => { popupModal.style.display = "none"; });
+    window.addEventListener('click', (e) => { if (e.target === popupModal) { popupModal.style.display = "none"; } });
+    popupSlider.addEventListener('input', () => {
+      popupSliderValueElem.textContent = popupSlider.value;
+      const color = getMoodColor(popupSlider.value);
+      popupSliderValueElem.style.backgroundColor = color;
+      popupSliderValueElem.style.color = isDarkColor(color) ? "#fff" : "#000";
+    });
+    popupSaveBtn.addEventListener('click', () => {
+      if (activeDay) {
+        const { year, month, day, cell } = activeDay;
+        const val = parseInt(popupSlider.value, 10);
+        const key = `${year}-${month}-${day}`;
+        dayValues[key] = val;
+        localStorage.setItem("dayValues", JSON.stringify(dayValues));
+        const color = getMoodColor(val);
+        cell.style.backgroundColor = color;
+        cell.style.color = isDarkColor(color) ? "#fff" : "#000";
+        drawLineChart(year, month);
+        updateMoodSummary(year, month);
+        popupModal.style.display = "none";
+        showToast("Mående uppdaterat!");
+      }
+    });
+
+    /* --- Dark Mode Toggle (manuell) --- */
+    darkModeToggle.addEventListener('change', () => {
+      if (darkModeToggle.checked) {
+        document.body.classList.add('dark-mode');
+        darkModeStatus.textContent = "Dark Mode On";
+      } else {
+        document.body.classList.remove('dark-mode');
+        darkModeStatus.textContent = "Dark Mode Off";
+      }
+      drawLineChart(currentCalendarYear, currentCalendarMonth);
+    });
+
+    /* --- Swipe Gesture (för iOS) --- */
+    let touchStartX = 0, touchEndX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleGesture();
+    });
+    function handleGesture() {
+      if (touchEndX < touchStartX - 50) {
+        if (todaySection.classList.contains('active')) {
+          calendarTab.click();
+          calendarSection.classList.add('slide-in-left');
+          setTimeout(() => { calendarSection.classList.remove('slide-in-left'); }, 500);
+        }
+      }
+      if (touchEndX > touchStartX + 50) {
+        if (calendarSection.classList.contains('active')) {
+          todayTab.click();
+          todaySection.classList.add('slide-in-right');
+          setTimeout(() => { todaySection.classList.remove('slide-in-right'); }, 500);
+        }
+      }
+    }
+
+    /* --- Hjälpfunktioner för färginterpolering (baserat på valt tema) --- */
+    function getMoodColor(val) {
+      const theme = themes[currentThemeKey];
+      const [r1, g1, b1] = theme.negative;
+      const [r2, g2, b2] = theme.positive;
+      const t = val / 100;
+      const r = Math.round(r1 + t * (r2 - r1));
+      const g = Math.round(g1 + t * (g2 - g1));
+      const b = Math.round(b1 + t * (b2 - b1));
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+    function isDarkColor(rgb) {
+      const parts = rgb.match(/\d+/g);
+      const r = parseInt(parts[0], 10),
+            g = parseInt(parts[1], 10),
+            b = parseInt(parts[2], 10);
+      const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+      return brightness < 128;
+    }
+
+    /* --- Toast Funktion --- */
+    function showToast(message) {
+      toast.textContent = message;
+      toast.style.opacity = 1;
+      setTimeout(() => { toast.style.opacity = 0; }, 2000);
+    }
+
+    // Vid sidladdning, visa Dagens Mående-fliken
+    todayTab.click();
+  </script>
+</body>
+</html>
