@@ -714,6 +714,22 @@
     }
     applySystemDarkMode();
 
+    darkModeToggle.addEventListener('change', () => {
+      console.log("Dark mode toggle changed, checked:", darkModeToggle.checked);
+      if (darkModeToggle.checked) {
+        document.body.classList.add('dark-mode');
+        darkModeStatus.textContent = "Dark Mode On";
+      } else {
+        document.body.classList.remove('dark-mode');
+        darkModeStatus.textContent = "Dark Mode Off";
+      }
+      drawLineChart(currentCalendarYear, currentCalendarMonth);
+    });
+    darkModeToggle.addEventListener('click', () => {
+      console.log("Dark mode toggle clicked, checked:", darkModeToggle.checked);
+    });
+    
+
     if (window.matchMedia) {
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         applySystemDarkMode();
