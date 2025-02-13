@@ -166,7 +166,7 @@
       width: 20px;
       height: 100px;
       background: #666;
-      border: 2px solid #fff;
+      background: #888; border: 2px solid #333;
       border-radius: 25px;
       cursor: pointer;
       background-clip: padding-box;       /* Förhindrar att border "läcker" utanför */
@@ -185,7 +185,7 @@
       width: 20px;
       height: 100px;
       background: #666;
-      border: 2px solid #fff;
+      background: #888; border: 2px solid #333;
       border-radius: 50%;
       cursor: pointer;
       background-clip: padding-box;
@@ -365,6 +365,21 @@
       transition: .4s;
       border-radius: 34px;
     }
+    .dark-switch-slider {
+      position: absolute;
+      right: 20%;
+      bottom: 10px;
+    }
+    .dark-switch {
+      height: 40px;
+      width: 100%;
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: center;
+
+      position: relative;
+      margin-top: 30px;
+    }
     .slider-toggle:before {
       position: absolute;
       content: "";
@@ -380,7 +395,15 @@
     input:checked + .slider-toggle:before { transform: translateX(26px); }
     
     #settingsModal h2 { margin-bottom: 1rem; }
-    #darkModeStatus { display: block; margin-top: 0.5rem; font-size: 0.9rem; }
+    #darkModeStatus { 
+      display: block; 
+      margin-top: 0.5rem; 
+      font-size: 0.9rem; 
+
+      position: absolute;
+      left: 20%;
+      bottom: 20px;
+    }
     #resetDataBtn {
       margin-top: 1rem;
       background-color: #b00;
@@ -396,10 +419,19 @@
     
     /* Tema-dropdown i settings */
     #themeSelect {
-      width: 80%;
+      width: 50%;
       padding: 0.4rem;
       margin-top: 1rem;
       font-size: 1rem;
+    }
+    .themeMenu {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .themeMenu label {
+      margin-top: 12px;
     }
     
     /* ===== Toast Meddelande ===== */
@@ -512,13 +544,15 @@
       <span class="modal-close" id="settingsModalClose">&times;</span>
       <h2>Inställningar</h2>
       <div class="dark-switch">
-        <label class="switch">
-          <input type="checkbox" id="darkModeToggle">
-          <span class="slider-toggle"></span>
-        </label>
+        <div class="dark-switch-slider">
+          <label class="switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
         <span id="darkModeStatus">Dark Mode Off</span>
       </div>
-      <div>
+      <div class="themeMenu">
         <label for="themeSelect">Välj Tema:</label>
         <select id="themeSelect">
           <option value="standard">Standard</option>
