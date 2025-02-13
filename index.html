@@ -16,23 +16,18 @@
 
   <style>
     html, body {
-      /* Hindrar scrollning */
       overflow: hidden;
-      /* Hindrar textmarkering */
-      -webkit-user-select: none;  /* iOS, Safari */
+      -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
       user-select: none;
-      /* Hindrar long-press callout (kopiera/klistra in) på iOS */
       -webkit-touch-callout: none;
-      /* Alternativt, för att säkerställa att touch-interaktioner bara hanteras av dina element: */
-      /* touch-action: manipulation; */
     }
     body {
-      background-color: #222; /* Ändra till din önskade färg */
+      background-color: #222;
       padding-top: env(safe-area-inset-top);
     }
-    /* ===== CSS-Variabler för tema (uppdateras dynamiskt) ===== */
+    /* ===== CSS-Variabler för tema ===== */
     :root {
       --slider-gradient-start: rgb(255,102,102);
       --slider-gradient-end: rgb(102,255,102);
@@ -42,7 +37,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
     body { background-color: #fafafa; color: #333; transition: background-color 0.3s, color 0.3s; }
     
-    /* Dark mode – appliceras både automatiskt utifrån enhetens inställning och via toggle */
+    /* Dark mode */
     .dark-mode { background-color: #222; color: #eee; }
     .dark-mode header,
     .dark-mode .today-card,
@@ -64,6 +59,11 @@
     }
     .dark-mode .vertical-slider::-moz-range-thumb {
       background: #888; border: 2px solid #333;
+    }
+    /* Dark mode för statistik-sidan */
+    .dark-mode .stats-container {
+      background: #333;
+      color: #eee;
     }
     
     /* ===== Header & Navigation ===== */
@@ -95,10 +95,9 @@
     }
     nav button.active,
     nav button:hover { background-color: #ddd; }
-    /* Settings-knapp – placeras längst upp till höger */
     #settingsBtn {
       align-self: flex-end;
-      background-color: inherit;
+      background-color: transparent;
       border: none;
       padding: 0.4rem 0.8rem;
       border-radius: 4px;
@@ -111,7 +110,7 @@
       color: #333;
     }
     
-    /* ===== Sektioner (med fade-in) ===== */
+    /* ===== Sektioner ===== */
     .section {
       display: none;
       padding: 1rem;
@@ -146,8 +145,8 @@
     .vertical-slider {
       -webkit-appearance: none;
       appearance: none;
-      width: 250px;  /* Längden (blir höjd efter rotation) */
-      height: 100px; /* Tjockleken (blir bredd) */
+      width: 250px;
+      height: 100px;
       transform: rotate(-90deg);
       margin: 0;
       position: absolute;
@@ -165,13 +164,12 @@
       appearance: none;
       width: 20px;
       height: 100px;
-      background: #666;
       background: #888; border: 2px solid #333;
       border-radius: 25px;
       cursor: pointer;
-      background-clip: padding-box;       /* Förhindrar att border "läcker" utanför */
-      outline: none;                       /* Tar bort outline vid fokus */
-      -webkit-transform: translateZ(0);    /* Tvingar GPU-accelererad rendering */
+      background-clip: padding-box;
+      outline: none;
+      -webkit-transform: translateZ(0);
       transform: translateZ(0);
       will-change: transform;
     }
@@ -180,11 +178,9 @@
       background: linear-gradient(to right, var(--slider-gradient-start), var(--slider-gradient-end));
       border-radius: 3px;
     }
-
     .vertical-slider::-moz-range-thumb {
       width: 20px;
       height: 100px;
-      background: #666;
       background: #888; border: 2px solid #333;
       border-radius: 50%;
       cursor: pointer;
@@ -215,7 +211,6 @@
       transition: background 0.3s;
       margin-top: 6rem;
     }
-    /* För modaler sänker vi marginalen på save-knappen så att den syns */
     #popupModal .save-btn { margin-top: 4.5rem !important; }
     .save-btn:hover { background-color: #555; }
     
@@ -297,7 +292,7 @@
       height: auto !important;
     }
     
-    /* ===== Modaler (Popup, Settings & Confirm) ===== */
+    /* ===== Modaler ===== */
     .modal {
       display: none;
       position: fixed;
@@ -327,7 +322,6 @@
       font-size: 24px;
       cursor: pointer;
     }
-    /* Allmän styling för knappar i modaler */
     .modal-content button {
       background-color: #2196F3;
       color: #fff;
@@ -343,11 +337,10 @@
       background-color: #1976D2;
       transform: scale(1.02);
     }
-    /* Specifik styling för bekräftelsemodalens knappar */
     #confirmYesBtn { background-color: #4CAF50; }
     #confirmNoBtn { background-color: #f44336; }
     
-    /* ===== Settings Modal Extra – Toggle Switch, Tema-dropdown & Rensa Data ===== */
+    /* ===== Settings Modal Extra ===== */
     #settingsModal .modal-content { max-width: 300px; }
     .switch {
       position: relative;
@@ -376,7 +369,6 @@
       display: flex;
       flex-direction: row-reverse;
       justify-content: center;
-
       position: relative;
       margin-top: 30px;
     }
@@ -399,7 +391,6 @@
       display: block; 
       margin-top: 0.5rem; 
       font-size: 0.9rem; 
-
       position: absolute;
       left: 20%;
       bottom: 20px;
@@ -417,7 +408,7 @@
     }
     #resetDataBtn:hover { background-color: #900; }
     
-    /* Tema-dropdown i settings */
+    /* Tema-dropdown */
     #themeSelect {
       width: 50%;
       padding: 0.4rem;
@@ -450,41 +441,64 @@
       font-size: 0.9rem;
       z-index: 3000;
     }
-    #todayTab, #calendarTab {
+    /* Inkludera stats-tabben i nav-knapparna */
+    #todayTab, #calendarTab, #statsTab {
       background-color: #555;
       color: #fff;
     }
-    #todayTab.active, #calendarTab.active {
+    #todayTab.active, #calendarTab.active, #statsTab.active {
       background-color: #222;
     }
+    
     /* ===== Swipe Animation ===== */
     .slide-in-left { animation: slideInLeft 0.5s forwards; }
     @keyframes slideInLeft { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     .slide-in-right { animation: slideInRight 0.5s forwards; }
     @keyframes slideInRight { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     
-    /* ===== Responsivt – Mobilanpassat ===== */
+    /* ===== Responsivt ===== */
     @media (max-width: 600px) {
       header h1 { font-size: 1.6rem; }
       nav button { font-size: 0.9rem; padding: 0.4rem 0.8rem; }
-      .today-card, .calendar-container, .chart-container { width: 95%; margin: 0.5rem auto; }
+      .today-card, .calendar-container, .chart-container, .stats-container { width: 95%; margin: 0.5rem auto; }
       .modal-content { width: 90%; padding: 1rem; }
+    }
+    
+    /* Statistik-sidans extra styling */
+    .stats-container {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+      height: 300px;
+      margin: 1rem auto;
+    }
+    .stat-item {
+     margin: 8px 0;
+     font-size: 1rem;
+     text-align: left;
+    }
+    #totalGraph {
+     width: 100% !important;
+     height: auto !important;
     }
   </style>
 </head>
 <body>
 
-  <!-- ===== Header med Navigation & Settings ===== -->
+  <!-- Header med Navigation & Settings -->
   <header>
     <h1>MåendeKollen</h1>
     <nav>
       <button id="todayTab" class="active">Dagens Mående</button>
       <button id="calendarTab">Kalender</button>
+      <button id="statsTab">Statistik</button>
     </nav>
     <button id="settingsBtn">⚙</button>
   </header>
 
-  <!-- ===== Dagens Mående (vertikal slider) ===== -->
+  <!-- Dagens Mående -->
   <section id="todaySection" class="section active">
     <div class="today-card">
       <h2>Dagens Mående</h2>
@@ -498,7 +512,7 @@
     </div>
   </section>
 
-  <!-- ===== Kalender ===== -->
+  <!-- Kalender -->
   <section id="calendarSection" class="section">
     <div class="calendar-container">
       <div class="calendar-header">
@@ -525,7 +539,21 @@
     </div>
   </section>
 
-  <!-- ===== Popup Modal för kalenderredigering ===== -->
+  <!-- Statistik -->
+  <section id="statsSection" class="section">
+    <div class="stats-container">
+      <h2>Statistik</h2>
+      <div id="streakInfo">Din nuvarande streak: -</div>
+      <div id="otherStats">
+        <!-- Ytterligare statistik visas här -->
+      </div>
+      <div id="totalGraphContainer">
+        <canvas id="totalGraph" width="600" height="200"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popup Modal för kalenderredigering -->
   <div id="popupModal" class="modal">
     <div class="modal-content">
       <span class="modal-close" id="modalClose">&times;</span>
@@ -538,7 +566,7 @@
     </div>
   </div>
 
-  <!-- ===== Settings Modal (med dark mode, temaväxling & rensa data) ===== -->
+  <!-- Settings Modal -->
   <div id="settingsModal" class="modal">
     <div class="modal-content">
       <span class="modal-close" id="settingsModalClose">&times;</span>
@@ -568,7 +596,7 @@
     </div>
   </div>
 
-  <!-- ===== Custom Confirmation Modal ===== -->
+  <!-- Custom Confirmation Modal -->
   <div id="confirmModal" class="modal">
     <div class="modal-content">
       <span class="modal-close" id="confirmModalClose">&times;</span>
@@ -579,15 +607,17 @@
     </div>
   </div>
 
-  <!-- ===== Toast Meddelande ===== -->
+  <!-- Toast Meddelande -->
   <div id="toast"></div>
 
   <script>
     /* ===== Global Variables & Navigation ===== */
     const todayTab = document.getElementById('todayTab');
     const calendarTab = document.getElementById('calendarTab');
+    const statsTab = document.getElementById('statsTab');
     const todaySection = document.getElementById('todaySection');
     const calendarSection = document.getElementById('calendarSection');
+    const statsSection = document.getElementById('statsSection');
 
     // Dagens Mående
     const todayDateElem = document.getElementById('todayDate');
@@ -631,7 +661,7 @@
     // Toast
     const toast = document.getElementById('toast');
 
-    // Hämta sparade värden från localStorage
+    // Hämta sparade värden
     let dayValues = JSON.parse(localStorage.getItem("dayValues") || "{}");
 
     // Datum
@@ -641,14 +671,14 @@
     const todayD = today.getDate();
     const currentDate = new Date(todayY, todayM, todayD);
 
-    // Variabel för aktuell dag vid redigering
+    // Redigeringsvariabel
     let activeDay = null;
 
-    // Variabler för kalendern
+    // Kalendervariabler
     let currentCalendarYear = todayY;
     let currentCalendarMonth = todayM;
 
-    /* --- Teman med tydlig negativ (ledsen) & positiv (glad) färg --- */
+    /* --- Teman --- */
     const themes = {
       standard: { name: "Standard", negative: [255,102,102], positive: [102,255,102] },
       ocean:    { name: "Ocean Blue", negative: [0,102,153], positive: [102,204,255] },
@@ -659,20 +689,17 @@
       midnight: { name: "Midnight", negative: [10,10,50], positive: [100,149,237] }
     };
 
-    // Hämta valt tema från localStorage (om finns) annars standard
     let currentThemeKey = localStorage.getItem("themeKey") || "standard";
-    // Sätt CSS-variabler utifrån valt tema
     const theme = themes[currentThemeKey];
     document.documentElement.style.setProperty('--slider-gradient-start', `rgb(${theme.negative.join(',')})`);
     document.documentElement.style.setProperty('--slider-gradient-end', `rgb(${theme.positive.join(',')})`);
 
-    /* --- Vid sidladdning, om ett tema nyligen byttes, visa toast --- */
     if(localStorage.getItem("themeChanged")){
       showToast("Nytt tema applicerat!");
       localStorage.removeItem("themeChanged");
     }
 
-    /* --- Automatisk dark mode: kolla enhetens preferens --- */
+    /* --- Automatisk dark mode --- */
     function applySystemDarkMode() {
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         document.body.classList.add('dark-mode');
@@ -687,7 +714,6 @@
     }
     applySystemDarkMode();
 
-    // Lyssna på ändringar i systemets dark mode (om möjligt)
     if (window.matchMedia) {
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         applySystemDarkMode();
@@ -709,7 +735,6 @@
         newMonth = 0;
         newYear++;
       }
-      // Om nästa månad ligger i framtiden, visa istället aktuell månad
       if (newYear > currentDate.getFullYear() || (newYear === currentDate.getFullYear() && newMonth > currentDate.getMonth())) {
         newYear = currentDate.getFullYear();
         newMonth = currentDate.getMonth();
@@ -723,15 +748,28 @@
     todayTab.addEventListener('click', () => {
       todayTab.classList.add('active');
       calendarTab.classList.remove('active');
+      statsTab.classList.remove('active');
       todaySection.classList.add('active');
       calendarSection.classList.remove('active');
+      statsSection.classList.remove('active');
     });
     calendarTab.addEventListener('click', () => {
       calendarTab.classList.add('active');
       todayTab.classList.remove('active');
+      statsTab.classList.remove('active');
       calendarSection.classList.add('active');
       todaySection.classList.remove('active');
+      statsSection.classList.remove('active');
       loadCalendar(currentCalendarYear, currentCalendarMonth);
+    });
+    statsTab.addEventListener('click', () => {
+      statsTab.classList.add('active');
+      todayTab.classList.remove('active');
+      calendarTab.classList.remove('active');
+      statsSection.classList.add('active');
+      todaySection.classList.remove('active');
+      calendarSection.classList.remove('active');
+      loadStats();
     });
 
     /* --- Spara Dagens Mående --- */
@@ -740,10 +778,50 @@
       const key = `${todayY}-${todayM}-${todayD}`;
       dayValues[key] = val;
       localStorage.setItem("dayValues", JSON.stringify(dayValues));
+      // Spara tidsstämpel endast vid första sparningen (för dagens inmatning)
+      let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
+      if (!entryTimestamps[key]) {
+        entryTimestamps[key] = key; // Sätt tidsstämpeln till dagens nyckel
+        localStorage.setItem("entryTimestamps", JSON.stringify(entryTimestamps));
+      }
       showToast("Dagens Mående sparat!");
       currentCalendarYear = todayY;
       currentCalendarMonth = todayM;
       calendarTab.click();
+    });
+
+    /* --- Popup Modal (redigera kalender) --- */
+    modalClose.addEventListener('click', () => { popupModal.style.display = "none"; });
+    window.addEventListener('click', (e) => { if (e.target === popupModal) { popupModal.style.display = "none"; } });
+    popupSlider.addEventListener('input', () => {
+      popupSliderValueElem.textContent = popupSlider.value;
+      const color = getMoodColor(popupSlider.value);
+      popupSliderValueElem.style.backgroundColor = color;
+      popupSliderValueElem.style.color = isDarkColor(color) ? "#fff" : "#000";
+    });
+    popupSaveBtn.addEventListener('click', () => {
+      if (activeDay) {
+        const { year, month, day, cell } = activeDay;
+        const val = parseInt(popupSlider.value, 10);
+        const key = `${year}-${month}-${day}`;
+        dayValues[key] = val;
+        localStorage.setItem("dayValues", JSON.stringify(dayValues));
+        // Om användaren redigerar en tidigare dag (ej idag) uppdateras inte tidsstämpeln – streaken påverkas alltså inte
+        if (year === todayY && month === todayM && day === todayD) {
+          let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
+          if (!entryTimestamps[key]) {
+            entryTimestamps[key] = key;
+            localStorage.setItem("entryTimestamps", JSON.stringify(entryTimestamps));
+          }
+        }
+        const color = getMoodColor(val);
+        cell.style.backgroundColor = color;
+        cell.style.color = isDarkColor(color) ? "#fff" : "#000";
+        drawLineChart(year, month);
+        updateMoodSummary(year, month);
+        popupModal.style.display = "none";
+        showToast("Mående uppdaterat!");
+      }
     });
 
     /* --- Settings Modal --- */
@@ -765,10 +843,11 @@
     });
     window.addEventListener('click', (e) => { if (e.target === confirmModal) { confirmModal.style.display = "none"; } });
 
-    /* --- Reset Data med custom bekräftelse --- */
+    /* --- Reset Data --- */
     resetDataBtn.addEventListener('click', () => {
       showConfirm("Är du säker på att du vill rensa all data?", () => {
         localStorage.removeItem("dayValues");
+        localStorage.removeItem("entryTimestamps");
         dayValues = {};
         loadCalendar(currentCalendarYear, currentCalendarMonth);
         showToast("Data rensad!");
@@ -790,7 +869,7 @@
       todaySliderValueElem.style.color = isDarkColor(color) ? "#fff" : "#000";
     });
 
-    /* --- Tema-val: spara nytt tema och reloada sidan med toast --- */
+    /* --- Tema-val --- */
     themeSelect.value = currentThemeKey;
     themeSelect.addEventListener('change', () => {
       const newTheme = themeSelect.value;
@@ -799,7 +878,7 @@
       location.reload();
     });
 
-    /* --- Uppdatera sliderbakgrunder (QOL) --- */
+    /* --- Uppdatera sliderbakgrunder --- */
     function updateSliderBackgrounds() {
       const todayColor = getMoodColor(todaySlider.value);
       todaySliderValueElem.style.backgroundColor = todayColor;
@@ -897,7 +976,6 @@
       let axisColor = document.body.classList.contains('dark-mode') ? "#777" : "#ccc";
       let lineColor = document.body.classList.contains('dark-mode') ? "#fff" : "#333";
       
-      // Rita axlar
       ctx.beginPath();
       ctx.strokeStyle = axisColor;
       ctx.moveTo(pad, h - pad);
@@ -906,7 +984,6 @@
       ctx.lineTo(pad, pad);
       ctx.stroke();
       
-      // Rita mjuk linje med quadraticCurveTo
       ctx.beginPath();
       ctx.strokeStyle = lineColor;
       ctx.lineWidth = 2;
@@ -933,7 +1010,6 @@
       }
       ctx.stroke();
       
-      // Rita datapunkter
       for (let i = 0; i < dataPoints.length; i++) {
         let val = dataPoints[i];
         if (val === null) continue;
@@ -949,7 +1025,6 @@
       }
     }
 
-    // Hjälpfunktion för att rita en mjuk kurva
     function drawSmoothLine(points) {
       ctx.moveTo(points[0].x, points[0].y);
       if (points.length === 1) {
@@ -965,69 +1040,7 @@
       }
     }
 
-    /* --- Popup Modal för kalenderredigering --- */
-    modalClose.addEventListener('click', () => { popupModal.style.display = "none"; });
-    window.addEventListener('click', (e) => { if (e.target === popupModal) { popupModal.style.display = "none"; } });
-    popupSlider.addEventListener('input', () => {
-      popupSliderValueElem.textContent = popupSlider.value;
-      const color = getMoodColor(popupSlider.value);
-      popupSliderValueElem.style.backgroundColor = color;
-      popupSliderValueElem.style.color = isDarkColor(color) ? "#fff" : "#000";
-    });
-    popupSaveBtn.addEventListener('click', () => {
-      if (activeDay) {
-        const { year, month, day, cell } = activeDay;
-        const val = parseInt(popupSlider.value, 10);
-        const key = `${year}-${month}-${day}`;
-        dayValues[key] = val;
-        localStorage.setItem("dayValues", JSON.stringify(dayValues));
-        const color = getMoodColor(val);
-        cell.style.backgroundColor = color;
-        cell.style.color = isDarkColor(color) ? "#fff" : "#000";
-        drawLineChart(year, month);
-        updateMoodSummary(year, month);
-        popupModal.style.display = "none";
-        showToast("Mående uppdaterat!");
-      }
-    });
-
-    /* --- Dark Mode Toggle (manuell) --- */
-    darkModeToggle.addEventListener('change', () => {
-      if (darkModeToggle.checked) {
-        document.body.classList.add('dark-mode');
-        darkModeStatus.textContent = "Dark Mode On";
-      } else {
-        document.body.classList.remove('dark-mode');
-        darkModeStatus.textContent = "Dark Mode Off";
-      }
-      drawLineChart(currentCalendarYear, currentCalendarMonth);
-    });
-
-    /* --- Swipe Gesture (för iOS) --- */
-    let touchStartX = 0, touchEndX = 0;
-    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
-    document.addEventListener('touchend', e => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleGesture();
-    });
-    function handleGesture() {
-      if (touchEndX < touchStartX - 50) {
-        if (todaySection.classList.contains('active')) {
-          calendarTab.click();
-          calendarSection.classList.add('slide-in-left');
-          setTimeout(() => { calendarSection.classList.remove('slide-in-left'); }, 500);
-        }
-      }
-      if (touchEndX > touchStartX + 50) {
-        if (calendarSection.classList.contains('active')) {
-          todayTab.click();
-          todaySection.classList.add('slide-in-right');
-          setTimeout(() => { todaySection.classList.remove('slide-in-right'); }, 500);
-        }
-      }
-    }
-
-    /* --- Hjälpfunktioner för färginterpolering (baserat på valt tema) --- */
+    /* --- Hjälpfunktioner för färginterpolering --- */
     function getMoodColor(val) {
       const theme = themes[currentThemeKey];
       const [r1, g1, b1] = theme.negative;
@@ -1054,6 +1067,228 @@
       setTimeout(() => { toast.style.opacity = 0; }, 2000);
     }
 
+// Hjälpfunktion för att rita en smooth linje i en given context
+function drawSmoothLineOnCtx(ctx, points) {
+  ctx.moveTo(points[0].x, points[0].y);
+  if (points.length === 1) {
+    ctx.lineTo(points[0].x, points[0].y);
+  } else {
+    for (let i = 0; i < points.length - 1; i++) {
+      let midX = (points[i].x + points[i+1].x) / 2;
+      let midY = (points[i].y + points[i+1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
+    }
+    let lastPoint = points[points.length - 1];
+    ctx.lineTo(lastPoint.x, lastPoint.y);
+  }
+}
+
+// Hjälpfunktion för att rita en bakgrundsgrid i stats-grafen
+function drawGrid(ctx, canvas, pad) {
+  ctx.save();
+  const isDark = document.body.classList.contains('dark-mode');
+  ctx.strokeStyle = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+  
+  // Rita 5 horisontella linjer
+  const numHLines = 5;
+  const hStep = (canvas.height - 2 * pad) / (numHLines - 1);
+  for (let i = 0; i < numHLines; i++) {
+    let y = pad + i * hStep;
+    ctx.beginPath();
+    ctx.moveTo(pad, y);
+    ctx.lineTo(canvas.width - pad, y);
+    ctx.stroke();
+  }
+  
+  // Rita 5 vertikala linjer
+  const numVLines = 5;
+  const vStep = (canvas.width - 2 * pad) / (numVLines - 1);
+  for (let j = 0; j < numVLines; j++) {
+    let x = pad + j * vStep;
+    ctx.beginPath();
+    ctx.moveTo(x, pad);
+    ctx.lineTo(x, canvas.height - pad);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// Uppdaterad statistikfunktion med smooth linjer och grid
+function loadStats() {
+  // Hämta tidsstämplar
+  let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
+  
+  // Räkna ut streaken: Endast om dagens inmatning finns och tidsstämpeln matchar
+  const todayKey = `${todayY}-${todayM}-${todayD}`;
+  let streak = 0;
+  if (dayValues[todayKey] !== undefined) {
+    streak = 1;
+    let current = new Date(today);
+    current.setDate(current.getDate() - 1);
+    while (true) {
+      const key = `${current.getFullYear()}-${current.getMonth()}-${current.getDate()}`;
+      if (dayValues[key] !== undefined) {
+        if (entryTimestamps[key] && entryTimestamps[key] === key) {
+          streak++;
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+      current.setDate(current.getDate() - 1);
+    }
+  }
+  document.getElementById('streakInfo').innerHTML =
+    `<div class="stat-item"><strong>Din nuvarande streak:</strong> ${streak} dagar</div>`;
+  
+  // Samla in alla inmatningar (endast dagar idag eller tidigare)
+  let entries = [];
+  for (let key in dayValues) {
+    const parts = key.split("-");
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]);
+    const day = parseInt(parts[2]);
+    const date = new Date(year, month, day);
+    if (date <= currentDate) {
+      entries.push({ date, mood: dayValues[key] });
+    }
+  }
+  entries.sort((a, b) => a.date - b.date);
+  
+  // Beräkna övergripande statistik
+  let sum = 0, count = 0, best = -Infinity, worst = Infinity;
+  entries.forEach(entry => {
+    sum += entry.mood;
+    count++;
+    if (entry.mood > best) best = entry.mood;
+    if (entry.mood < worst) worst = entry.mood;
+  });
+  let avg = count > 0 ? Math.round(sum / count) : null;
+  document.getElementById('otherStats').innerHTML = `
+    <div class="stat-item"><strong>Antal inmatningar:</strong> ${count}</div>
+    <div class="stat-item"><strong>Genomsnittligt mående:</strong> ${avg !== null ? avg : '-'} /100</div>
+    <div class="stat-item"><strong>Bästa mående:</strong> ${best !== -Infinity ? best : '-'} /100</div>
+    <div class="stat-item"><strong>Sämsta mående:</strong> ${worst !== Infinity ? worst : '-'} /100</div>
+  `;
+  
+  // Rita en tidbaserad total mood-graf med smooth linje
+  const canvas = document.getElementById('totalGraph');
+  const ctxTotal = canvas.getContext('2d');
+  ctxTotal.clearRect(0, 0, canvas.width, canvas.height);
+  
+  const pad = 40;
+  const lineColor = document.body.classList.contains('dark-mode') ? "#fff" : "#333";
+  const axisColor = document.body.classList.contains('dark-mode') ? "#777" : "#ccc";
+  
+  // Rita bakgrundsgrid
+  drawGrid(ctxTotal, canvas, pad);
+  
+  // Rita axlar
+  ctxTotal.beginPath();
+  ctxTotal.strokeStyle = axisColor;
+  ctxTotal.moveTo(pad, canvas.height - pad);
+  ctxTotal.lineTo(canvas.width - pad, canvas.height - pad);
+  ctxTotal.moveTo(pad, canvas.height - pad);
+  ctxTotal.lineTo(pad, pad);
+  ctxTotal.stroke();
+  
+  if (count > 0) {
+    const firstDate = entries[0].date;
+    const lastDate = entries[entries.length - 1].date;
+    const totalDays = (lastDate - firstDate) / (1000 * 3600 * 24);
+    let points = [];
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      let x;
+      if (totalDays > 0) {
+        const dayDiff = (entry.date - firstDate) / (1000 * 3600 * 24);
+        x = pad + (dayDiff / totalDays) * (canvas.width - 2 * pad);
+      } else {
+        x = pad + i * ((canvas.width - 2 * pad) / (entries.length - 1));
+      }
+      const y = pad + (1 - entry.mood / 100) * (canvas.height - 2 * pad);
+      points.push({ x, y });
+    }
+    ctxTotal.beginPath();
+    ctxTotal.lineWidth = 2;
+    ctxTotal.strokeStyle = lineColor;
+    drawSmoothLineOnCtx(ctxTotal, points);
+    ctxTotal.stroke();
+    
+    // Rita datapunkter
+    for (let i = 0; i < points.length; i++) {
+      ctxTotal.beginPath();
+      ctxTotal.arc(points[i].x, points[i].y, 4, 0, 2 * Math.PI);
+      ctxTotal.fillStyle = getMoodColor(entries[i].mood);
+      ctxTotal.fill();
+    }
+  } else {
+    ctxTotal.font = "16px sans-serif";
+    ctxTotal.fillStyle = lineColor;
+    ctxTotal.fillText("Ingen data att visa", 10, 30);
+  }
+}
+    
+    /* --- Swipe Gesture för tre flikar --- */
+    let touchStartX = 0, touchEndX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleGesture();
+    });
+    function handleGesture() {
+      if (touchEndX < touchStartX - 50) {
+        if (todaySection.classList.contains('active')) {
+          calendarTab.click();
+          calendarSection.classList.add('slide-in-left');
+          setTimeout(() => { calendarSection.classList.remove('slide-in-left'); }, 500);
+        } else if (calendarSection.classList.contains('active')) {
+          statsTab.click();
+          statsSection.classList.add('slide-in-left');
+          setTimeout(() => { statsSection.classList.remove('slide-in-left'); }, 500);
+        }
+      }
+      if (touchEndX > touchStartX + 50) {
+        if (statsSection.classList.contains('active')) {
+          calendarTab.click();
+          calendarSection.classList.add('slide-in-right');
+          setTimeout(() => { calendarSection.classList.remove('slide-in-right'); }, 500);
+        } else if (calendarSection.classList.contains('active')) {
+          todayTab.click();
+          todaySection.classList.add('slide-in-right');
+          setTimeout(() => { todaySection.classList.remove('slide-in-right'); }, 500);
+        }
+      }
+    }
+    
+    /* --- Hjälpfunktioner för färginterpolering --- */
+    function getMoodColor(val) {
+      const theme = themes[currentThemeKey];
+      const [r1, g1, b1] = theme.negative;
+      const [r2, g2, b2] = theme.positive;
+      const t = val / 100;
+      const r = Math.round(r1 + t * (r2 - r1));
+      const g = Math.round(g1 + t * (g2 - g1));
+      const b = Math.round(b1 + t * (b2 - b1));
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+    function isDarkColor(rgb) {
+      const parts = rgb.match(/\d+/g);
+      const r = parseInt(parts[0], 10),
+            g = parseInt(parts[1], 10),
+            b = parseInt(parts[2], 10);
+      const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+      return brightness < 128;
+    }
+    
+    /* --- Toast Funktion --- */
+    function showToast(message) {
+      toast.textContent = message;
+      toast.style.opacity = 1;
+      setTimeout(() => { toast.style.opacity = 0; }, 2000);
+    }
+    
     // Vid sidladdning, visa Dagens Mående-fliken
     todayTab.click();
     document.addEventListener('DOMContentLoaded', updateSliderBackgrounds);
