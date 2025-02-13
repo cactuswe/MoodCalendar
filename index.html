@@ -891,7 +891,7 @@
 
     /* --- Reset Data --- */
     resetDataBtn.addEventListener('click', () => {
-      showConfirm("Är du säker på att du vill rensa all data?", () => {
+      showConfirm(`Är du säker på att du vill rensa all data?\nDetta går inte att ångra.`, () => {
         localStorage.removeItem("dayValues");
         localStorage.removeItem("entryTimestamps");
         dayValues = {};
