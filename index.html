@@ -699,19 +699,49 @@
       localStorage.removeItem("themeChanged");
     }
 
-    /* --- Automatisk dark mode --- */
     function applySystemDarkMode() {
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.body.classList.add('dark-mode');
-        darkModeToggle.checked = true;
-        darkModeStatus.textContent = "Dark Mode On";
+      // Kolla om användaren redan har sparat en preferens
+      let preferredMode = localStorage.getItem("preferredMode");
+      if (preferredMode) {
+        if (preferredMode === "dark") {
+          document.body.classList.add('dark-mode');
+          darkModeToggle.checked = true;
+          darkModeStatus.textContent = "Dark Mode On";
+        } else {
+          document.body.classList.remove('dark-mode');
+          darkModeToggle.checked = false;
+          darkModeStatus.textContent = "Dark Mode Off";
+        }
       } else {
-        document.body.classList.remove('dark-mode');
-        darkModeToggle.checked = false;
-        darkModeStatus.textContent = "Dark Mode Off";
+        // Om ingen preferens är sparad, använd enhetens inställning
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.body.classList.add('dark-mode');
+          darkModeToggle.checked = true;
+          darkModeStatus.textContent = "Dark Mode On";
+        } else {
+          document.body.classList.remove('dark-mode');
+          darkModeToggle.checked = false;
+          darkModeStatus.textContent = "Dark Mode Off";
+        }
       }
       drawLineChart(currentCalendarYear, currentCalendarMonth);
     }
+    
+    // Vid ändring av dark mode‑switchen:
+    darkModeToggle.addEventListener('change', () => {
+      console.log("Dark mode toggle changed, checked:", darkModeToggle.checked);
+      if (darkModeToggle.checked) {
+        document.body.classList.add('dark-mode');
+        darkModeStatus.textContent = "Dark Mode On";
+        localStorage.setItem("preferredMode", "dark");
+      } else {
+        document.body.classList.remove('dark-mode');
+        darkModeStatus.textContent = "Dark Mode Off";
+        localStorage.setItem("preferredMode", "light");
+      }
+      drawLineChart(currentCalendarYear, currentCalendarMonth);
+    });
+    
     applySystemDarkMode();
 
     darkModeToggle.addEventListener('change', () => {
