@@ -142,15 +142,18 @@
           background-color: #eee;
           border: none;
           padding: 0.5rem 1rem;
+          width: 100px;
           font-size: 1rem;
           cursor: pointer;
           border-radius: 4px;
-          transition: background-color 0.2s;
+          transition: all 0.2s;
+          border-bottom: transparent 2px solid;
         }
         
         nav button.active,
         nav button:hover {
           background-color: #ddd;
+          border-bottom: var(--slider-gradient-start) 2px solid;
         }
         
         #settingsBtn {
