@@ -1527,14 +1527,14 @@
         }
         
         function loadStats() {
-    let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
-    const todayKey = `${todayY}-${todayM}-${todayD}`;
-    let streak = 0;
+           let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
+           const todayKey = `${todayY}-${todayM}-${todayD}`;
+           let streak = 0;
 
-    if (dayValues[todayKey] !== undefined) {
-        streak = 1;
-        let current = new Date(today);
-        current.setDate(current.getDate() - 1);
+           if (dayValues[todayKey] !== undefined) {
+              streak = 1;
+              let current = new Date(today);
+              current.setDate(current.getDate() - 1);
 
         while (true) {
             const key = `${current.getFullYear()}-${current.getMonth()}-${current.getDate()}`;
