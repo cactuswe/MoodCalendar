@@ -1555,7 +1555,7 @@
     let streakDisplay = streak >= 3 ? `${streak}🔥` : streak;
 
     // Uppdatera UI (förutsatt att det finns ett element med id "streakDisplay")
-    document.getElementById("streakInfo").textContent = `<div class="stat-item"><strong>Din nuvarande streak:</strong> ${streakDisplay}</div>`;
+    document.getElementById("streakInfo").innerHTML = `<div class="stat-item"><strong>Din nuvarande streak:</strong> ${streakDisplay}</div>`;
 
     let entries = [];
     for (let key in dayValues) {
@@ -1685,8 +1685,8 @@
             id: "moodBooster",
             name: "Mood Booster",
             emoji: "😃",
-            condition: avg !== null && avg >= 80,
-            instruction: "Uppnå ett genomsnitt på minst 80."
+            condition: avg !== null && avg >= 50,
+            instruction: "Uppnå ett genomsnitt på minst 50."
         },
         {
             id: "participation10",
@@ -1694,13 +1694,6 @@
             emoji: "🤝",
             condition: entries.length >= 10,
             instruction: "Gör minst 10 inmatningar."
-        },
-        {
-            id: "dedication50",
-            name: "Dedication",
-            emoji: "💪",
-            condition: entries.length >= 50,
-            instruction: "Gör minst 50 inmatningar."
         },
         {
             id: "halfYear",
