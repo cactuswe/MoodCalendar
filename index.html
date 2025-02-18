@@ -1527,28 +1527,36 @@
         }
         
         function loadStats() {
-           let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
-           const todayKey = `${todayY}-${todayM}-${todayD}`;
-           let streak = 0;
-           if (dayValues[todayKey] !== undefined) {
-              streak = 1;
-              let current = new Date(today);
-              current.setDate(current.getDate() - 1);
-              while (true) {
-                 const key = `${current.getFullYear()}-${current.getMonth()}-${current.getDate()}`;
-                 if (dayValues[key] !== undefined) {
-                    if (entryTimestamps[key] && entryTimestamps[key] === key) {
-                       streak++;
-                    } else {
-                       break;
-                    }
-                 } else {
+    let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
+    const todayKey = `${todayY}-${todayM}-${todayD}`;
+    let streak = 0;
+
+    if (dayValues[todayKey] !== undefined) {
+        streak = 1;
+        let current = new Date(today);
+        current.setDate(current.getDate() - 1);
+
+        while (true) {
+            const key = `${current.getFullYear()}-${current.getMonth()}-${current.getDate()}`;
+            if (dayValues[key] !== undefined) {
+                if (entryTimestamps[key] && entryTimestamps[key] === key) {
+                    streak++;
+                } else {
                     break;
-                 }
-                 current.setDate(current.getDate() - 1);
-              }
-           }
-           document.getElementById('streakInfo').innerHTML = `<div class="stat-item"><strong>Din nuvarande streak:</strong> ${streak} dagar</div>`;
+                }
+            } else {
+                break;
+            }
+            current.setDate(current.getDate() - 1);
+        }
+    }
+
+    // Om streak är 3 eller mer, lägg till 🔥
+    let streakDisplay = streak >= 3 ? `${streak}🔥` : streak;
+
+    // Uppdatera UI (förutsatt att det finns ett element med id "streakDisplay")
+    document.getElementById("streakInfo").textContent = `<div class="stat-item"><strong>Din nuvarande streak:</strong> ${streakDisplay}</div>`;
+}
            let entries = [];
            for (let key in dayValues) {
               const parts = key.split("-");
@@ -1681,13 +1689,6 @@
                  instruction: "Uppnå ett genomsnitt på minst 80."
               },
               {
-                 id: "downer",
-                 name: "Downer",
-                 emoji: "😢",
-                 condition: avg !== null && avg <= 20,
-                 instruction: "Uppnå ett genomsnitt på högst 20."
-              },
-              {
                  id: "participation10",
                  name: "Participation",
                  emoji: "🤝",
@@ -1716,25 +1717,11 @@
                  instruction: "Registrera ditt mående i minst 365 dagar."
               },
               {
-                 id: "consistent",
-                 name: "Consistent",
-                 emoji: "🤗",
-                 condition: avg !== null && avg >= 40 && avg <= 60,
-                 instruction: "Ha ett genomsnitt mellan 40 och 60."
-              },
-              {
                  id: "optimist",
                  name: "Optimist",
                  emoji: "😊",
                  condition: avg !== null && avg >= 90,
                  instruction: "Uppnå ett genomsnitt på minst 90."
-              },
-              {
-                 id: "pessimist",
-                 name: "Pessimist",
-                 emoji: "😞",
-                 condition: avg !== null && avg <= 10,
-                 instruction: "Uppnå ett genomsnitt på högst 10."
               },
               {
                  id: "explorer",
