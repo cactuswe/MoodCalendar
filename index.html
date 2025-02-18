@@ -1741,14 +1741,39 @@
             if (achievementTooltip.style.display === "block" && achievementTooltip.dataset.source === ach.id) {
                 achievementTooltip.style.display = "none";
                 achievementTooltip.dataset.source = "";
-            } else {
-                let rect = badge.getBoundingClientRect();
-                achievementTooltip.textContent = ach.name + ": " + ach.instruction;
-                achievementTooltip.style.top = (rect.top - 50) + "px";
-                achievementTooltip.style.left = (rect.left + rect.width / 2 - 100) + "px";
-                achievementTooltip.style.display = "block";
-                achievementTooltip.dataset.source = ach.id;
-            }
+} else {
+    let rect = badge.getBoundingClientRect();
+    achievementTooltip.textContent = ach.name + ": " + ach.instruction;
+    achievementTooltip.style.display = "block";
+
+    // Beräkna tooltipens position
+    let tooltipWidth = achievementTooltip.offsetWidth;
+    let tooltipHeight = achievementTooltip.offsetHeight;
+
+    // Standardposition (centrerad under badge)
+    let tooltipLeft = rect.left + rect.width / 2 - tooltipWidth / 2;
+    let tooltipTop = rect.top - tooltipHeight - 10; // 10px mellanrum
+
+    // Justera om tooltipen hamnar utanför vänsterkanten
+    if (tooltipLeft < 0) {
+        tooltipLeft = 10; // 10px marginal från vänsterkanten
+    }
+
+    // Justera om tooltipen hamnar utanför högerkanten
+    if (tooltipLeft + tooltipWidth > window.innerWidth) {
+        tooltipLeft = window.innerWidth - tooltipWidth - 10; // 10px marginal från högerkanten
+    }
+
+    // Justera om tooltipen hamnar utanför toppen
+    if (tooltipTop < 0) {
+        tooltipTop = rect.bottom + 10; // Visa under badge istället
+    }
+
+    // Sätt tooltipens position
+    achievementTooltip.style.left = tooltipLeft + "px";
+    achievementTooltip.style.top = tooltipTop + "px";
+    achievementTooltip.dataset.source = ach.id;
+}
         });
         achievementsContainer.appendChild(badge);
     });
