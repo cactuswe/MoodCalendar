@@ -1526,15 +1526,15 @@
            });
         }
         
-        function loadStats() {
-           let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
-           const todayKey = `${todayY}-${todayM}-${todayD}`;
-           let streak = 0;
+   function loadStats() {
+    let entryTimestamps = JSON.parse(localStorage.getItem("entryTimestamps") || "{}");
+    const todayKey = `${todayY}-${todayM}-${todayD}`;
+    let streak = 0;
 
-           if (dayValues[todayKey] !== undefined) {
-              streak = 1;
-              let current = new Date(today);
-              current.setDate(current.getDate() - 1);
+    if (dayValues[todayKey] !== undefined) {
+        streak = 1;
+        let current = new Date(today);
+        current.setDate(current.getDate() - 1);
 
         while (true) {
             const key = `${current.getFullYear()}-${current.getMonth()}-${current.getDate()}`;
@@ -1556,210 +1556,210 @@
 
     // Uppdatera UI (förutsatt att det finns ett element med id "streakDisplay")
     document.getElementById("streakInfo").textContent = `<div class="stat-item"><strong>Din nuvarande streak:</strong> ${streakDisplay}</div>`;
-}
-           let entries = [];
-           for (let key in dayValues) {
-              const parts = key.split("-");
-              const year = parseInt(parts[0]);
-              const month = parseInt(parts[1]);
-              const day = parseInt(parts[2]);
-              const date = new Date(year, month, day);
-              if (date <= currentDate) {
-                 entries.push({
-                    date,
-                    mood: dayValues[key]
-                 });
-              }
-           }
-           entries.sort((a, b) => a.date - b.date);
-           const now = new Date();
-           if (currentStatsInterval === "week") {
-              entries = entries.filter(e => (now - e.date) / (1000 * 3600 * 24) <= 7);
-           } else if (currentStatsInterval === "month") {
-              entries = entries.filter(e => (now - e.date) / (1000 * 3600 * 24) <= 30);
-           } else if (currentStatsInterval === "year") {
-              entries = entries.filter(e => (now - e.date) / (1000 * 3600 * 24) <= 365);
-           }
-           let sum = 0,
-              count = 0,
-              best = -Infinity,
-              worst = Infinity;
-           entries.forEach(entry => {
-              sum += entry.mood;
-              count++;
-              if (entry.mood > best) best = entry.mood;
-              if (entry.mood < worst) worst = entry.mood;
-           });
-           let avg = count > 0 ? Math.round(sum / count) : null;
-           document.getElementById('otherStats').innerHTML = `
-                     <div class="stat-item"><strong>Antal inmatningar:</strong> ${count}</div>
-                     <div class="stat-item"><strong>Genomsnittligt mående:</strong> ${avg !== null ? avg : '-'} /100</div>
-                     <div class="stat-item"><strong>Bästa mående:</strong> ${best !== -Infinity ? best : '-'} /100</div>
-                     <div class="stat-item"><strong>Sämsta mående:</strong> ${worst !== Infinity ? worst : '-'} /100</div>
-                   `;
-           const canvas = document.getElementById('totalGraph');
-           const ctxTotal = canvas.getContext('2d');
-           ctxTotal.clearRect(0, 0, canvas.width, canvas.height);
-           const padVal = 40;
-           const lineColor = document.body.classList.contains('dark-mode') ? "#fff" : "#333";
-           const axisColor = document.body.classList.contains('dark-mode') ? "#777" : "#ccc";
-           drawGrid(ctxTotal, canvas, padVal);
-           ctxTotal.beginPath();
-           ctxTotal.strokeStyle = axisColor;
-           ctxTotal.moveTo(padVal, canvas.height - padVal);
-           ctxTotal.lineTo(canvas.width - padVal, canvas.height - padVal);
-           ctxTotal.moveTo(padVal, canvas.height - padVal);
-           ctxTotal.lineTo(padVal, padVal);
-           ctxTotal.stroke();
-           if (count > 0) {
-              const firstDate = entries[0].date;
-              const lastDate = entries[entries.length - 1].date;
-              const totalDays = (lastDate - firstDate) / (1000 * 3600 * 24);
-              let points = [];
-              for (let i = 0; i < entries.length; i++) {
-                 const entry = entries[i];
-                 let x;
-                 if (totalDays > 0) {
-                    const dayDiff = (entry.date - firstDate) / (1000 * 3600 * 24);
-                    x = padVal + (dayDiff / totalDays) * (canvas.width - 2 * padVal);
-                 } else {
-                    x = padVal + i * ((canvas.width - 2 * padVal) / (entries.length - 1));
-                 }
-                 const y = padVal + (1 - entry.mood / 100) * (canvas.height - 2 * padVal);
-                 points.push({
-                    x,
-                    y,
-                    mood: entry.mood
-                 });
-              }
-              if (diagramType === "bar") {
-                 drawBarChartTotal(points, entries.length);
-              } else {
-                 ctxTotal.beginPath();
-                 ctxTotal.lineWidth = 2;
-                 ctxTotal.strokeStyle = lineColor;
-                 drawSmoothLineOnCtx(ctxTotal, points);
-                 ctxTotal.stroke();
-                 for (let i = 0; i < points.length; i++) {
-                    ctxTotal.beginPath();
-                    ctxTotal.arc(points[i].x, points[i].y, 4, 0, 2 * Math.PI);
-                    ctxTotal.fillStyle = getMoodColor(points[i].mood);
-                    ctxTotal.fill();
-                 }
-              }
-           } else {
-              ctxTotal.font = "16px sans-serif";
-              ctxTotal.fillStyle = lineColor;
-              ctxTotal.fillText("Ingen data att visa", 10, 30);
-           }
-           let achievedBadges = JSON.parse(localStorage.getItem("achievedBadges") || "{}");
-           const achievements = [{
-                 id: "firstEntry",
-                 name: "First Entry",
-                 emoji: "🎉",
-                 condition: entries.length >= 1,
-                 instruction: "Registrera din första inmatning."
-              },
-              {
-                 id: "streak7",
-                 name: "Streak Master",
-                 emoji: "🔥",
-                 condition: streak >= 7,
-                 instruction: "Registrera ditt mående 7 dagar i rad."
-              },
-              {
-                 id: "streak30",
-                 name: "Streak Champion",
-                 emoji: "🏆",
-                 condition: streak >= 30,
-                 instruction: "Registrera ditt mående 30 dagar i rad."
-              },
-              {
-                 id: "streak100",
-                 name: "Streak Legend",
-                 emoji: "⭐",
-                 condition: streak >= 100,
-                 instruction: "Registrera ditt mående 100 dagar i rad."
-              },
-              {
-                 id: "moodBooster",
-                 name: "Mood Booster",
-                 emoji: "😃",
-                 condition: avg !== null && avg >= 80,
-                 instruction: "Uppnå ett genomsnitt på minst 80."
-              },
-              {
-                 id: "participation10",
-                 name: "Participation",
-                 emoji: "🤝",
-                 condition: entries.length >= 10,
-                 instruction: "Gör minst 10 inmatningar."
-              },
-              {
-                 id: "dedication50",
-                 name: "Dedication",
-                 emoji: "💪",
-                 condition: entries.length >= 50,
-                 instruction: "Gör minst 50 inmatningar."
-              },
-              {
-                 id: "halfYear",
-                 name: "Half Year",
-                 emoji: "🗓️",
-                 condition: entries.length >= 180,
-                 instruction: "Registrera ditt mående i minst 180 dagar."
-              },
-              {
-                 id: "fullYear",
-                 name: "Full Year",
-                 emoji: "📅",
-                 condition: entries.length >= 365,
-                 instruction: "Registrera ditt mående i minst 365 dagar."
-              },
-              {
-                 id: "optimist",
-                 name: "Optimist",
-                 emoji: "😊",
-                 condition: avg !== null && avg >= 90,
-                 instruction: "Uppnå ett genomsnitt på minst 90."
-              },
-              {
-                 id: "explorer",
-                 name: "Explorer",
-                 emoji: "🌍",
-                 condition: (new Set(entries.map(e => e.date.getMonth()))).size >= 6,
-                 instruction: "Ha inmatningar under minst 6 olika månader."
-              }
-           ];
-           achievementsContainer.innerHTML = "";
-           achievements.forEach(ach => {
-              let badge = document.createElement("span");
-              badge.className = "achievement-badge" + (ach.condition ? " achieved" : "");
-              badge.textContent = ach.emoji;
-              badge.dataset.name = ach.name;
-              badge.dataset.instruction = ach.instruction;
-              if (ach.condition && !achievedBadges[ach.id]) {
-                 achievedBadges[ach.id] = true;
-                 localStorage.setItem("achievedBadges", JSON.stringify(achievedBadges));
-                 showToast("Achievement unlocked: " + ach.name + " " + ach.emoji);
-              }
-              badge.addEventListener("click", (e) => {
-                 e.stopPropagation();
-                 if (achievementTooltip.style.display === "block" && achievementTooltip.dataset.source === ach.id) {
-                    achievementTooltip.style.display = "none";
-                    achievementTooltip.dataset.source = "";
-                 } else {
-                    let rect = badge.getBoundingClientRect();
-                    achievementTooltip.textContent = ach.name + ": " + ach.instruction;
-                    achievementTooltip.style.top = (rect.top - 50) + "px";
-                    achievementTooltip.style.left = (rect.left + rect.width / 2 - 100) + "px";
-                    achievementTooltip.style.display = "block";
-                    achievementTooltip.dataset.source = ach.id;
-                 }
-              });
-              achievementsContainer.appendChild(badge);
-           });
+
+    let entries = [];
+    for (let key in dayValues) {
+        const parts = key.split("-");
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]);
+        const day = parseInt(parts[2]);
+        const date = new Date(year, month, day);
+        if (date <= currentDate) {
+            entries.push({
+                date,
+                mood: dayValues[key]
+            });
         }
+    }
+    entries.sort((a, b) => a.date - b.date);
+    const now = new Date();
+    if (currentStatsInterval === "week") {
+        entries = entries.filter(e => (now - e.date) / (1000 * 3600 * 24) <= 7);
+    } else if (currentStatsInterval === "month") {
+        entries = entries.filter(e => (now - e.date) / (1000 * 3600 * 24) <= 30);
+    } else if (currentStatsInterval === "year") {
+        entries = entries.filter(e => (now - e.date) / (1000 * 3600 * 24) <= 365);
+    }
+    let sum = 0,
+        count = 0,
+        best = -Infinity,
+        worst = Infinity;
+    entries.forEach(entry => {
+        sum += entry.mood;
+        count++;
+        if (entry.mood > best) best = entry.mood;
+        if (entry.mood < worst) worst = entry.mood;
+    });
+    let avg = count > 0 ? Math.round(sum / count) : null;
+    document.getElementById('otherStats').innerHTML = `
+        <div class="stat-item"><strong>Antal inmatningar:</strong> ${count}</div>
+        <div class="stat-item"><strong>Genomsnittligt mående:</strong> ${avg !== null ? avg : '-'} /100</div>
+        <div class="stat-item"><strong>Bästa mående:</strong> ${best !== -Infinity ? best : '-'} /100</div>
+        <div class="stat-item"><strong>Sämsta mående:</strong> ${worst !== Infinity ? worst : '-'} /100</div>
+    `;
+    const canvas = document.getElementById('totalGraph');
+    const ctxTotal = canvas.getContext('2d');
+    ctxTotal.clearRect(0, 0, canvas.width, canvas.height);
+    const padVal = 40;
+    const lineColor = document.body.classList.contains('dark-mode') ? "#fff" : "#333";
+    const axisColor = document.body.classList.contains('dark-mode') ? "#777" : "#ccc";
+    drawGrid(ctxTotal, canvas, padVal);
+    ctxTotal.beginPath();
+    ctxTotal.strokeStyle = axisColor;
+    ctxTotal.moveTo(padVal, canvas.height - padVal);
+    ctxTotal.lineTo(canvas.width - padVal, canvas.height - padVal);
+    ctxTotal.moveTo(padVal, canvas.height - padVal);
+    ctxTotal.lineTo(padVal, padVal);
+    ctxTotal.stroke();
+    if (count > 0) {
+        const firstDate = entries[0].date;
+        const lastDate = entries[entries.length - 1].date;
+        const totalDays = (lastDate - firstDate) / (1000 * 3600 * 24);
+        let points = [];
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            let x;
+            if (totalDays > 0) {
+                const dayDiff = (entry.date - firstDate) / (1000 * 3600 * 24);
+                x = padVal + (dayDiff / totalDays) * (canvas.width - 2 * padVal);
+            } else {
+                x = padVal + i * ((canvas.width - 2 * padVal) / (entries.length - 1));
+            }
+            const y = padVal + (1 - entry.mood / 100) * (canvas.height - 2 * padVal);
+            points.push({
+                x,
+                y,
+                mood: entry.mood
+            });
+        }
+        if (diagramType === "bar") {
+            drawBarChartTotal(points, entries.length);
+        } else {
+            ctxTotal.beginPath();
+            ctxTotal.lineWidth = 2;
+            ctxTotal.strokeStyle = lineColor;
+            drawSmoothLineOnCtx(ctxTotal, points);
+            ctxTotal.stroke();
+            for (let i = 0; i < points.length; i++) {
+                ctxTotal.beginPath();
+                ctxTotal.arc(points[i].x, points[i].y, 4, 0, 2 * Math.PI);
+                ctxTotal.fillStyle = getMoodColor(points[i].mood);
+                ctxTotal.fill();
+            }
+        }
+    } else {
+        ctxTotal.font = "16px sans-serif";
+        ctxTotal.fillStyle = lineColor;
+        ctxTotal.fillText("Ingen data att visa", 10, 30);
+    }
+    let achievedBadges = JSON.parse(localStorage.getItem("achievedBadges") || "{}");
+    const achievements = [{
+            id: "firstEntry",
+            name: "First Entry",
+            emoji: "🎉",
+            condition: entries.length >= 1,
+            instruction: "Registrera din första inmatning."
+        },
+        {
+            id: "streak7",
+            name: "Streak Master",
+            emoji: "🔥",
+            condition: streak >= 7,
+            instruction: "Registrera ditt mående 7 dagar i rad."
+        },
+        {
+            id: "streak30",
+            name: "Streak Champion",
+            emoji: "🏆",
+            condition: streak >= 30,
+            instruction: "Registrera ditt mående 30 dagar i rad."
+        },
+        {
+            id: "streak100",
+            name: "Streak Legend",
+            emoji: "⭐",
+            condition: streak >= 100,
+            instruction: "Registrera ditt mående 100 dagar i rad."
+        },
+        {
+            id: "moodBooster",
+            name: "Mood Booster",
+            emoji: "😃",
+            condition: avg !== null && avg >= 80,
+            instruction: "Uppnå ett genomsnitt på minst 80."
+        },
+        {
+            id: "participation10",
+            name: "Participation",
+            emoji: "🤝",
+            condition: entries.length >= 10,
+            instruction: "Gör minst 10 inmatningar."
+        },
+        {
+            id: "dedication50",
+            name: "Dedication",
+            emoji: "💪",
+            condition: entries.length >= 50,
+            instruction: "Gör minst 50 inmatningar."
+        },
+        {
+            id: "halfYear",
+            name: "Half Year",
+            emoji: "🗓️",
+            condition: entries.length >= 180,
+            instruction: "Registrera ditt mående i minst 180 dagar."
+        },
+        {
+            id: "fullYear",
+            name: "Full Year",
+            emoji: "📅",
+            condition: entries.length >= 365,
+            instruction: "Registrera ditt mående i minst 365 dagar."
+        },
+        {
+            id: "optimist",
+            name: "Optimist",
+            emoji: "😊",
+            condition: avg !== null && avg >= 90,
+            instruction: "Uppnå ett genomsnitt på minst 90."
+        },
+        {
+            id: "explorer",
+            name: "Explorer",
+            emoji: "🌍",
+            condition: (new Set(entries.map(e => e.date.getMonth()))).size >= 6,
+            instruction: "Ha inmatningar under minst 6 olika månader."
+        }
+    ];
+    achievementsContainer.innerHTML = "";
+    achievements.forEach(ach => {
+        let badge = document.createElement("span");
+        badge.className = "achievement-badge" + (ach.condition ? " achieved" : "");
+        badge.textContent = ach.emoji;
+        badge.dataset.name = ach.name;
+        badge.dataset.instruction = ach.instruction;
+        if (ach.condition && !achievedBadges[ach.id]) {
+            achievedBadges[ach.id] = true;
+            localStorage.setItem("achievedBadges", JSON.stringify(achievedBadges));
+            showToast("Achievement unlocked: " + ach.name + " " + ach.emoji);
+        }
+        badge.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (achievementTooltip.style.display === "block" && achievementTooltip.dataset.source === ach.id) {
+                achievementTooltip.style.display = "none";
+                achievementTooltip.dataset.source = "";
+            } else {
+                let rect = badge.getBoundingClientRect();
+                achievementTooltip.textContent = ach.name + ": " + ach.instruction;
+                achievementTooltip.style.top = (rect.top - 50) + "px";
+                achievementTooltip.style.left = (rect.left + rect.width / 2 - 100) + "px";
+                achievementTooltip.style.display = "block";
+                achievementTooltip.dataset.source = ach.id;
+            }
+        });
+        achievementsContainer.appendChild(badge);
+    });
+}
         document.addEventListener("click", (e) => {
            if (achievementTooltip.style.display === "block") {
               achievementTooltip.style.display = "none";
