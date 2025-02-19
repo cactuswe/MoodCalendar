@@ -41,6 +41,7 @@
         
         body {
           height: 100vh;
+          backdrop-filter: brightness(20%);
           background: linear-gradient(to top, var(--slider-gradient-start), var(--slider-gradient-end));
           padding-top: env(safe-area-inset-top);
         }
@@ -59,13 +60,15 @@
         
         body {
           background-color: #fafafa;
+          backdrop-filter: brightness(20%);
           background: linear-gradient(to top, var(--slider-gradient-start), var(--slider-gradient-end));
           color: #333;
           transition: background-color 0.3s, color 0.3s;
         }
         
         .dark-mode {
-          background-color: #222;
+          background-color: #222; 
+          backdrop-filter: brightness(20%);
           background: linear-gradient(to top, var(--slider-gradient-start), var(--slider-gradient-end));
           color: #eee;
         }
