@@ -75,7 +75,7 @@
         .dark-mode .today-card,
         .dark-mode .calendar-container,
         .dark-mode .chart-container,
-        .dark-mode .modal-content {
+        .dark-mode .stats-container {
           background-color: rgba(120, 120, 120, 0.2);
           backdrop-filter: blur(4px)
           color: #eee;
@@ -113,11 +113,6 @@
         .dark-mode .vertical-slider::-moz-range-thumb {
           background: #888;
           border: 2px solid #333;
-        }
-        
-        .dark-mode .stats-container {
-          background: #333;
-          color: #eee;
         }
         
         header {
@@ -628,14 +623,14 @@
         #todayTab,
         #calendarTab,
         #statsTab {
-          background-color: #555;
+          background-color: rgba(0,0,0,0.4);
           color: #fff;
         }
         
         #todayTab.active,
         #calendarTab.active,
         #statsTab.active {
-          background-color: #222;
+          background-color: rgba(0,0,0,0.8);
         }
         
         .slide-in-left {
