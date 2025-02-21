@@ -80,7 +80,10 @@
           backdrop-filter: blur(4px)
           color: #eee;
         }
-        
+        .dark-mode .modal-content {
+          background-color: #222;
+        }
+      
         .dark-mode .weekday {
           background-color: #444;
           color: #eee;
@@ -168,7 +171,7 @@
         }
         
         #settingsBtn {
-          background-color: transparent;
+          background-color: #222;
           border: none;
           cursor: pointer;
           transition: background-color 0.2s;
@@ -623,14 +626,14 @@
         #todayTab,
         #calendarTab,
         #statsTab {
-          background-color: rgba(0,0,0,0.4);
+          background-color: rgba(100,100,100,0.4);
           color: #fff;
         }
         
         #todayTab.active,
         #calendarTab.active,
         #statsTab.active {
-          background-color: rgba(0,0,0,0.8);
+          background-color: rgba(80,80,80,0.8);
         }
         
         .slide-in-left {
