@@ -12,13 +12,15 @@
       <style>
         html,
         body {
-          overflow-x: hidden;
-          overflow-y: auto;
           -webkit-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
           user-select: none;
           -webkit-touch-callout: none;
+           margin: 0;
+           padding: 0;
+           overflow: auto; /* Se till att detta inte är 'hidden' */
+           height: 100%; /* Se till att body och html tar upp hela höjden */
         }
         select {
           -webkit-appearance: none;
