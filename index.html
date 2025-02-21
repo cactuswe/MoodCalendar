@@ -765,6 +765,42 @@
           height: 200vh;
        }
       </style>
+      <style>
+         html, body {
+           margin: 0;
+           padding: 0;
+           overflow: hidden; /* Förhindra skrollning på hela sidan */
+           height: 100vh; /* Sätt höjden till viewport-höjden */
+         }
+         header {
+           display: flex;
+           flex-direction: column;
+           background-color: #fff;
+           padding: 0.2rem;
+           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+           position: fixed;
+           bottom: 0;
+           width: 100vw;
+           height: 12vh;
+           left: 0;
+           z-index: 1000; /* Se till att headern ligger över andra element */
+         }
+         
+         .section {
+           display: none;
+           padding: 1rem;
+           opacity: 0;
+           transition: opacity 0.3s;
+           overflow: auto; /* Gör sektionerna skrollbara */
+           height: calc(100vh - 12vh); /* Höjd minus headerns höjd */
+           padding-bottom: 12vh; /* Lägg till padding för att undvika att innehåll döljs bakom headern */
+         }
+         
+         .section.active {
+           display: block;
+           opacity: 1;
+         }
+      </style>
    </head>
    <body>
       <header>
