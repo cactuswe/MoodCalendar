@@ -801,6 +801,22 @@
            opacity: 1;
          }
       </style>
+      <script>
+         function checkSectionHeight() {
+           const sections = document.querySelectorAll('.section');
+           sections.forEach(section => {
+             if (section.scrollHeight <= section.clientHeight) {
+               section.style.overflowY = 'hidden'; // Förhindra skrollning om innehållet är för kort
+             } else {
+               section.style.overflowY = 'auto'; // Tillåt skrollning om innehållet är längre
+             }
+           });
+         }
+         
+         // Kör funktionen när sidan laddas och när innehållet ändras
+         window.addEventListener('load', checkSectionHeight);
+         window.addEventListener('resize', checkSectionHeight);
+   </script>
    </head>
    <body>
       <header>
